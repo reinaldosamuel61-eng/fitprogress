@@ -1,4 +1,5 @@
 # ⚖️ FitProgress
+https://reinaldosamuel61-eng.github.io/fitprogress/
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black) ![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chartdotjs&logoColor=white) ![Local Storage](https://img.shields.io/badge/Local_Storage-10b981?style=flat&logo=databricks&logoColor=white)
 
@@ -29,5 +30,4 @@ Um sistema web completo e responsivo para o acompanhamento de alta precisão da 
 Como o projeto é construído em tecnologias web nativas (Vanilla JS), a execução é imediata e não requer a instalação de dependências complexas.
 
 1. **Clique no link:**
-   ```bash
-   [git clone [https://github.com/SEU_USUARIO/fitprogress.git](https://github.com/SEU_USUARIO/fitprogress.git)](https://reinaldosamuel61-eng.github.io/fitprogress/)
+   https://reinaldosamuel61-eng.github.io/fitprogress/
