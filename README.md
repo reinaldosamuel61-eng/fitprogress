@@ -28,6 +28,6 @@ Um sistema web completo e responsivo para o acompanhamento de alta precisão da 
 
 Como o projeto é construído em tecnologias web nativas (Vanilla JS), a execução é imediata e não requer a instalação de dependências complexas.
 
-1. **Clone este repositório:**
+1. **Clique no link:**
    ```bash
-   git clone [https://github.com/SEU_USUARIO/fitprogress.git](https://github.com/SEU_USUARIO/fitprogress.git)
+   [git clone [https://github.com/SEU_USUARIO/fitprogress.git](https://github.com/SEU_USUARIO/fitprogress.git)](https://reinaldosamuel61-eng.github.io/fitprogress/)
