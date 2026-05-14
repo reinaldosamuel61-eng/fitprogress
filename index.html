@@ -2,8 +2,10 @@
 <html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitProgress</title>
+    <!-- Adicionado maximum-scale para evitar zoom indesejado em inputs no mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FitProgress - Dashboard Ultra Precision</title>
+    <!-- Bibliotecas Externas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -35,7 +37,17 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        body { background-color: var(--slate-50); color: var(--slate-900); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        /* Ajuste crítico: max-width 100% e overflow-x hidden forçam o telemóvel a não espremer o layout */
+        html, body { 
+            background-color: var(--slate-50); 
+            color: var(--slate-900); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow-x: hidden;
+            width: 100vw;
+            max-width: 100%;
+        }
 
         /* Sistema de Notificações Profissional */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; }
@@ -52,139 +64,156 @@
         .nav-links button.active { background: var(--primary); color: var(--white); }
 
         main { flex: 1; padding: 2rem; max-width: 1300px; margin: 0 auto; width: 100%; }
-        .page { display: none; }
+        .page { display: none; width: 100%; }
         .page.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Auth Pages */
-        .auth-container { min-height: 80vh; display: flex; align-items: center; justify-content: center; }
+        .auth-container { min-height: 80vh; display: flex; align-items: center; justify-content: center; width: 100%; }
         .auth-card { background: var(--white); padding: 3rem; border-radius: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.05); width: 100%; max-width: 480px; border: 1px solid var(--slate-100); }
         .auth-card h1 { font-size: 2rem; margin-bottom: 2rem; text-align: center; color: var(--primary); font-weight: 900; letter-spacing: -1px; }
 
         /* Componentes de Formulário */
-        .form-group { margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; width: 100%; }
         label { display: block; font-size: 0.9rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--slate-800); }
-        input { width: 100%; padding: 1rem 1.2rem; border: 2px solid var(--slate-200); border-radius: 1rem; background: var(--slate-50); outline: none; font-size: 1rem; font-weight: 600; color: var(--slate-900); transition: 0.2s; }
+        input { width: 100%; padding: 1rem 1.2rem; border: 2px solid var(--slate-200); border-radius: 1rem; background: var(--slate-50); outline: none; font-size: 1rem; font-weight: 600; color: var(--slate-900); transition: 0.2s; box-sizing: border-box; }
         input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
         input.invalid { border-color: var(--danger); background: #fef2f2; }
 
         /* Radio Buttons Modernos para Sexo */
-        .gender-selector { display: flex; gap: 1rem; }
+        .gender-selector { display: flex; gap: 1rem; width: 100%; }
         .gender-option { flex: 1; }
         .gender-option input { display: none; }
-        .gender-option label { display: flex; align-items: center; justify-content: center; padding: 1rem; border: 2px solid var(--slate-200); border-radius: 1rem; background: var(--slate-50); cursor: pointer; font-weight: 800; color: var(--slate-700); transition: 0.2s; gap: 8px; }
+        .gender-option label { display: flex; align-items: center; justify-content: center; padding: 1rem; border: 2px solid var(--slate-200); border-radius: 1rem; background: var(--slate-50); cursor: pointer; font-weight: 800; color: var(--slate-700); transition: 0.2s; gap: 8px; width: 100%; text-align: center; }
         .gender-option input:checked + label { border-color: var(--primary); background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
 
-        .btn { padding: 1rem 1.5rem; border-radius: 1rem; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1rem; letter-spacing: 0.5px; }
-        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn { padding: 1rem 1.5rem; border-radius: 1rem; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1rem; letter-spacing: 0.5px; width: 100%; }
+        .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2); }
-        .btn-success { background: var(--success); color: white; width: 100%; }
-        .btn-danger { background: #fee2e2; color: var(--danger); font-size: 0.8rem; padding: 0.5rem 1rem; border-radius: 0.75rem; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: #fee2e2; color: var(--danger); font-size: 0.8rem; padding: 0.5rem 1rem; border-radius: 0.75rem; width: auto; }
+
+        /* Header Dashboard */
+        .dashboard-header { margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; width: 100%; }
+        .dashboard-header .welcome-title { font-size: 3rem; font-weight: 900; letter-spacing: -2px; color: var(--slate-900); }
+        .dashboard-header .user-info { color: var(--slate-700); font-weight: 700; font-size: 1.1rem; margin-top: 0.5rem; }
+        .dashboard-header .date-badge { font-size: 1rem; font-weight: 800; color: var(--slate-600); display:flex; align-items:center; gap:8px; background: var(--white); padding: 12px 20px; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--slate-200); }
 
         /* Grid do Dashboard Principal */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-bottom: 2rem; width: 100%; }
 
-        /* Cartões de Balança UI (Idêntico ao Exemplo do Utilizador) */
-        .gauge-card { background: var(--white); padding: 2.5rem; border-radius: 2rem; border: 1px solid var(--slate-200); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; }
+        /* Cartões de Balança UI */
+        .gauge-card { background: var(--white); padding: 2.5rem; border-radius: 2rem; border: 1px solid var(--slate-200); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; width: 100%; }
         .gauge-header { width: 100%; text-align: center; margin-bottom: 2rem; }
         .gauge-title { font-size: 1.1rem; font-weight: 900; color: var(--slate-800); text-transform: uppercase; letter-spacing: 1.5px; }
         
-        /* Isolamento do Canvas para não haver sobreposição */
-        .canvas-container { position: relative; width: 100%; height: 180px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 1rem; }
+        /* Isolamento do Canvas */
+        .canvas-container { position: relative; width: 100%; height: 180px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 1rem; max-width: 100%; }
         
         /* Informação de Texto Abaixo da Balança */
-        .gauge-info-box { display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 1rem; }
+        .gauge-info-box { display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 1rem; text-align: center; }
         .gauge-info-box p { font-size: 1.1rem; font-weight: 800; color: var(--slate-900); margin-bottom: 0.5rem; }
-        .gauge-val-huge { font-size: 5.5rem; font-weight: 900; color: var(--slate-900); line-height: 0.9; letter-spacing: -3px; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .gauge-val-huge { font-size: 5.5rem; font-weight: 900; color: var(--slate-900); line-height: 0.9; letter-spacing: -3px; font-family: 'Plus Jakarta Sans', sans-serif; word-wrap: break-word; }
         .status-badge-pill { font-size: 1.1rem; font-weight: 800; color: white; padding: 10px 30px; border-radius: 50px; display: inline-block; margin-top: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
 
         /* KPIs Lineares */
-        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: var(--white); padding: 2rem; border-radius: 2rem; border: 1px solid var(--slate-200); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; width: 100%; }
+        .stat-card { background: var(--white); padding: 2rem; border-radius: 2rem; border: 1px solid var(--slate-200); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); width: 100%; }
         .stat-card::before { content: ""; position: absolute; left: 0; top: 0; width: 6px; height: 100%; background: var(--primary); }
         .stat-card.success::before { background: var(--success); }
         .stat-label { font-size: 0.85rem; font-weight: 800; color: var(--slate-700); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .stat-value { font-size: 3rem; font-weight: 900; color: var(--slate-900); letter-spacing: -1px; line-height: 1; margin-bottom: 8px; }
-        .stat-value-ideal { font-size: 2.5rem; font-weight: 900; color: var(--primary); letter-spacing: -1px; line-height: 1.1; margin-bottom: 8px; }
+        .stat-value { font-size: 3rem; font-weight: 900; color: var(--slate-900); letter-spacing: -1px; line-height: 1; margin-bottom: 8px; word-wrap: break-word; }
+        .stat-value-ideal { font-size: 2.5rem; font-weight: 900; color: var(--primary); letter-spacing: -1px; line-height: 1.1; margin-bottom: 8px; word-wrap: break-word; }
         .stat-desc { font-size: 0.9rem; font-weight: 600; color: var(--slate-500); }
 
         /* Containers Genéricos */
-        .card-wide { background: var(--white); border-radius: 2rem; padding: 2.5rem; border: 1px solid var(--slate-200); margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .card-wide { background: var(--white); border-radius: 2rem; padding: 2.5rem; border: 1px solid var(--slate-200); margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); width: 100%; }
         .card-wide h3 { display: flex; align-items: center; gap: 12px; font-size: 1.2rem; text-transform: uppercase; font-weight: 900; margin-bottom: 2rem; color: var(--slate-800); }
 
+        /* Chart container com altura controlada */
+        .chart-container { height: 350px; width: 100%; position: relative; }
+
         /* Filtros de Gráfico */
-        .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-        .filter-btn { background: var(--slate-100); border: none; padding: 0.5rem 1.2rem; border-radius: 1rem; font-size: 0.85rem; font-weight: 800; cursor: pointer; color: var(--slate-700); transition: 0.2s; }
+        .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; width: 100%; flex-wrap: wrap; }
+        .filter-btn { background: var(--slate-100); border: none; padding: 0.5rem 1.2rem; border-radius: 1rem; font-size: 0.85rem; font-weight: 800; cursor: pointer; color: var(--slate-700); transition: 0.2s; flex-grow: 1; }
         .filter-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); }
 
+        /* Formulário de Registro (Removido inline style) */
+        .add-weight-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; align-items: flex-end; width: 100%; }
+        
+        /* Área de Ferramentas (Removido inline style) */
+        .tools-row { display: flex; gap: 1rem; margin-top: 2rem; width: 100%; }
+        .btn-action { background: var(--slate-100); color: var(--slate-700); font-size: 0.85rem; border: 1px solid var(--slate-200); flex: 1; }
+
         /* Tabela */
-        .table-box { overflow-x: auto; border-radius: 1.5rem; border: 1px solid var(--slate-100); }
+        .table-box { overflow-x: auto; border-radius: 1.5rem; border: 1px solid var(--slate-100); width: 100%; }
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 1.5rem; font-size: 0.85rem; background: var(--slate-50); color: var(--slate-700); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        td { padding: 1.5rem; border-top: 1px solid var(--slate-100); font-size: 1.1rem; font-weight: 700; color: var(--slate-800); vertical-align: middle; }
+        th { text-align: left; padding: 1.5rem; font-size: 0.85rem; background: var(--slate-50); color: var(--slate-700); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+        td { padding: 1.5rem; border-top: 1px solid var(--slate-100); font-size: 1.1rem; font-weight: 700; color: var(--slate-800); vertical-align: middle; white-space: nowrap; }
 
         /* Legenda de Rodapé Impecável */
-        .footer-legend { margin-top: 2rem; padding: 3rem; background: var(--white); border-radius: 2rem; border: 1px solid var(--slate-200); }
-        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        .footer-legend { margin-top: 2rem; padding: 3rem; background: var(--white); border-radius: 2rem; border: 1px solid var(--slate-200); width: 100%; }
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; width: 100%; }
         .legend-card { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; background: var(--slate-50); border-radius: 1rem; border: 1px solid var(--slate-100); transition: 0.2s; }
         .legend-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .legend-lead { display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 0.95rem; color: var(--slate-900); }
-        .color-pill { width: 16px; height: 16px; border-radius: 50%; }
-        .legend-range { font-weight: 900; color: var(--slate-600); font-size: 1rem; }
+        .color-pill { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+        .legend-range { font-weight: 900; color: var(--slate-600); font-size: 1rem; white-space: nowrap; }
 
-        .lucide { width: 22px; height: 22px; stroke-width: 2.5; }
+        .lucide { width: 22px; height: 22px; stroke-width: 2.5; flex-shrink: 0; }
 
         /* =========================================
            MEDIA QUERIES - RESPONSIVIDADE MOBILE
            ========================================= */
         @media (max-width: 768px) {
             /* Navegação */
-            nav { flex-direction: column; gap: 1rem; padding: 1rem; text-align: center; }
-            .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
+            nav { padding: 1rem; }
+            .nav-links { gap: 0.5rem; }
+            .nav-links button { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
             
-            /* Espaçamentos Globais */
+            /* Espaçamentos Globais Reduzidos para Mobile */
             main { padding: 1rem; }
-            .gauge-card, .stat-card, .card-wide, .footer-legend, .auth-card { padding: 1.5rem; border-radius: 1.5rem; }
-            .card-wide h3 { font-size: 1rem; margin-bottom: 1.5rem; }
+            .gauge-card, .stat-card, .card-wide, .footer-legend, .auth-card { padding: 1.25rem; border-radius: 1.25rem; }
+            .card-wide h3 { font-size: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
             
             /* Header do Dashboard */
-            #page-dashboard header { flex-direction: column; text-align: center; gap: 1rem; margin-bottom: 2rem; align-items: center; }
-            #welcome-text { font-size: 2.2rem !important; }
-            #user-info-bar { font-size: 0.9rem !important; }
-            header > div:last-child { justify-content: center; width: 100%; }
+            .dashboard-header { flex-direction: column; text-align: center; gap: 1rem; margin-bottom: 1.5rem; align-items: center; }
+            .dashboard-header .welcome-title { font-size: 2.2rem; }
+            .dashboard-header .user-info { font-size: 0.9rem; }
+            .dashboard-header .date-badge { width: 100%; justify-content: center; }
 
-            /* Grids */
-            .dashboard-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .kpi-row { grid-template-columns: 1fr; gap: 1rem; }
+            /* Grids colapsam para 1 coluna */
+            .dashboard-grid, .kpi-row, .legend-grid { grid-template-columns: 1fr; gap: 1rem; }
             
-            /* Textos das Balanças e KPIs */
-            .gauge-val-huge { font-size: 4rem !important; letter-spacing: -2px; }
-            .stat-value { font-size: 2.2rem !important; }
-            .stat-value-ideal { font-size: 1.8rem !important; } /* Ajuste crítico para o texto do range ideal não quebrar */
-            .canvas-container { height: 160px; } /* Ligeiramente menor em mobile */
+            /* Textos Adaptados */
+            .gauge-val-huge { font-size: 4rem; letter-spacing: -1px; }
+            .stat-value { font-size: 2.2rem; }
+            .stat-value-ideal { font-size: 1.8rem; }
+            .canvas-container { height: 150px; }
 
-            /* Filtros do Gráfico (Semana, Mês, etc) */
-            .filter-row { flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
-            .filter-btn { flex: 1; min-width: 45%; text-align: center; }
-
-            /* Formulário de Registo de Peso */
-            form[onsubmit="app.addWeight(event)"] { grid-template-columns: 1fr !important; gap: 1rem; }
+            /* Formulário Quebra para 1 Coluna */
+            .add-weight-form { grid-template-columns: 1fr; gap: 1rem; }
+            .add-weight-form button { margin-top: 0.5rem; }
             
-            /* Tabela */
-            th, td { padding: 1rem 0.5rem; font-size: 0.9rem; }
+            /* Tabela Ajustes */
+            th, td { padding: 1rem 0.75rem; font-size: 0.9rem; }
+            
+            /* Botões de Ação Quebram para Coluna */
+            .tools-row { flex-direction: column; gap: 0.75rem; }
+            
+            /* Gráfico */
+            .chart-container { height: 250px; }
             
             /* Legenda */
-            .legend-grid { grid-template-columns: 1fr; }
             .footer-legend { padding: 1.5rem; }
-            
-            /* Botões Gerais */
-            .tools-row { flex-direction: column; }
-            .btn { width: 100%; }
+            .legend-card { padding: 1rem; flex-direction: column; align-items: flex-start; gap: 8px; }
+            .legend-range { align-self: flex-end; }
         }
 
         @media (max-width: 480px) {
-            .gauge-val-huge { font-size: 3.2rem !important; }
-            .stat-value-ideal { font-size: 1.5rem !important; }
+            .gauge-val-huge { font-size: 3.2rem; }
+            .stat-value-ideal { font-size: 1.6rem; }
+            .dashboard-header .welcome-title { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -195,12 +224,13 @@
     <nav id="main-nav">
         <div class="logo"><i data-lucide="activity"></i> FitProgress</div>
         <div class="nav-links">
-            <button onclick="router.navigate('dashboard')" id="btn-dashboard" class="active"><i data-lucide="layout-dashboard"></i> Painel</button>
-            <button onclick="app.logout()" style="color: var(--danger)"><i data-lucide="log-out"></i> Sair</button>
+            <button onclick="router.navigate('dashboard')" id="btn-dashboard" class="active"><i data-lucide="layout-dashboard"></i> <span class="hide-mobile">Painel</span></button>
+            <button onclick="app.logout()" style="color: var(--danger)"><i data-lucide="log-out"></i> <span class="hide-mobile">Sair</span></button>
         </div>
     </nav>
 
     <main>
+        <!-- LOGIN -->
         <section id="page-login" class="page">
             <div class="auth-container">
                 <div class="auth-card">
@@ -221,6 +251,7 @@
             </div>
         </section>
 
+        <!-- CADASTRO -->
         <section id="page-cadastro" class="page">
             <div class="auth-container">
                 <div class="auth-card">
@@ -251,23 +282,25 @@
                         </div>
                         <button type="submit" class="btn btn-primary" style="margin-top: 1rem;"><i data-lucide="check-circle"></i> Criar Perfil e Entrar</button>
                     </form>
-                    <button class="btn" style="width:100%;margin-top:1rem;color:var(--slate-600);background:transparent;" onclick="router.navigate('login')">Voltar ao ecrã de Login</button>
+                    <button class="btn" style="margin-top:1rem;color:var(--slate-600);background:transparent;" onclick="router.navigate('login')">Voltar ao ecrã de Login</button>
                 </div>
             </div>
         </section>
 
+        <!-- DASHBOARD -->
         <section id="page-dashboard" class="page">
-            <header>
+            <header class="dashboard-header">
                 <div>
-                    <h1 id="welcome-text" style="font-size: 3rem; font-weight: 900; letter-spacing: -2px; color: var(--slate-900);">Olá, Reinaldo! 👋</h1>
-                    <p id="user-info-bar" style="color: var(--slate-700); font-weight: 700; font-size: 1.1rem; margin-top: 0.5rem;">Altura: 1.70m | 34 anos | Masculino</p>
+                    <h1 id="welcome-text" class="welcome-title">Olá, Reinaldo! 👋</h1>
+                    <p id="user-info-bar" class="user-info">Altura: 1.70m | 34 anos | Masculino</p>
                 </div>
-                <div style="font-size: 1rem; font-weight: 800; color: var(--slate-600); display:flex; align-items:center; gap:8px; background: var(--white); padding: 12px 20px; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--slate-200);">
+                <div class="date-badge">
                     <i data-lucide="calendar"></i> <span id="date-display">--/--/----</span>
                 </div>
             </header>
 
             <div class="dashboard-grid">
+                <!-- BALANÇA IMC -->
                 <div class="gauge-card">
                     <div class="gauge-header">
                         <span class="gauge-title">Índice de Massa Corporal (IMC)</span>
@@ -284,6 +317,7 @@
                     </div>
                 </div>
 
+                <!-- BALANÇA PESO ATUAL -->
                 <div class="gauge-card">
                     <div class="gauge-header">
                         <span class="gauge-title">Aferição de Peso Atual</span>
@@ -301,6 +335,7 @@
                 </div>
             </div>
 
+            <!-- KPIs -->
             <div class="kpi-row">
                 <div class="stat-card success">
                     <div class="stat-label">Perda Total Acumulada</div>
@@ -314,6 +349,7 @@
                 </div>
             </div>
 
+            <!-- Gráfico Linear -->
             <div class="card-wide">
                 <h3><i data-lucide="trending-down" style="color:var(--success)"></i> Trajetória de Evolução</h3>
                 <div class="filter-row">
@@ -322,27 +358,30 @@
                     <button class="filter-btn" onclick="app.setFilter('1A')" id="filter-1A">Ano</button>
                     <button class="filter-btn active" onclick="app.setFilter('ALL')" id="f-ALL">Tudo</button>
                 </div>
-                <div style="height: 350px;"><canvas id="lineChart"></canvas></div>
+                <div class="chart-container"><canvas id="lineChart"></canvas></div>
             </div>
 
+            <!-- Lançamento -->
             <div class="card-wide">
                 <h3><i data-lucide="plus-circle" style="color:var(--primary)"></i> Registar Nova Pesagem</h3>
-                <form onsubmit="app.addWeight(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; align-items: flex-end;">
+                <form class="add-weight-form" onsubmit="app.addWeight(event)">
                     <div class="form-group" style="margin:0;"><label>Data da Aferição</label><input type="date" id="new-date" required></div>
                     <div class="form-group" style="margin:0;"><label>Peso em KG (Ex: 91.90)</label><input type="text" id="new-weight" required placeholder="00.00"></div>
                     <button type="submit" class="btn btn-primary" style="height: 54px;"><i data-lucide="save"></i> Gravar Registro Seguro</button>
                 </form>
             </div>
 
+            <!-- Histórico -->
             <div class="card-wide">
                 <h3><i data-lucide="list" style="color:var(--primary)"></i> Histórico de Registros</h3>
                 <div class="table-box" id="history-box"></div>
-                <div class="tools-row" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <div class="tools-row">
                     <button class="btn btn-action" onclick="app.exportData()"><i data-lucide="download"></i> Exportar Backup JSON</button>
                     <label class="btn btn-action" style="margin:0; cursor:pointer;"><i data-lucide="upload"></i> Restaurar Backup<input type="file" id="importFile" style="display:none" onchange="app.importData(event)"></label>
                 </div>
             </div>
 
+            <!-- LEGENDA DETALHADA -->
             <div class="footer-legend">
                 <h3 style="font-size: 1.1rem; font-weight: 900; text-transform: uppercase; color: var(--slate-900); margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;"><i data-lucide="info" style="color: var(--primary)"></i> Classificação Detalhada do IMC</h3>
                 <div class="legend-grid">
