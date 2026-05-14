@@ -1,0 +1,28 @@
+# Ficheiros do Sistema Operativo (Mac e Windows)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Configurações de Editores de Código (VS Code, etc.)
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Backups gerados pela aplicação FitProgress
+backup\ fitprogress*.json
+*.json
+
+# Ficheiros de Node.js (Caso expanda o projeto no futuro)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json

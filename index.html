@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitProgress - Dashboard Ultra Precision</title>
+    <!-- Bibliotecas Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-700: #475569;
+            --slate-800: #1e293b;
+            --slate-900: #0f172a;
+            --white: #ffffff;
+
+            /* Cores da Balança IMC Exatas da Imagem */
+            --c-16: #3b82f6; 
+            --c-17: #60a5fa; 
+            --c-18: #38bdf8; 
+            --c-25: #84cc16; 
+            --c-30: #fbbf24; 
+            --c-35: #f97316; 
+            --c-40: #ef4444; 
+            --c-max: #b91c1c; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { background-color: var(--slate-50); color: var(--slate-900); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+        /* Sistema de Notificações Profissional */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; }
+        .toast { background: var(--white); padding: 1rem 1.5rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-left: 5px solid var(--primary); display: flex; align-items: center; gap: 12px; animation: slideDown 0.3s ease-out; font-weight: 700; font-size: 0.95rem; color: var(--slate-800); }
+        .toast.error { border-left-color: var(--danger); color: var(--danger); }
+        .toast.success { border-left-color: var(--success); color: var(--success); }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        nav { background: var(--white); padding: 1rem 2rem; display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--slate-200); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; }
+        .nav-links { display: flex; gap: 1rem; }
+        .nav-links button { background: transparent; border: none; padding: 0.6rem 1.2rem; font-weight: 700; color: var(--slate-700); cursor: pointer; border-radius: 0.75rem; transition: 0.2s; display: flex; align-items: center; gap: 0.4rem; font-size: 0.95rem; }
+        .nav-links button:hover { background: var(--slate-100); color: var(--primary); }
+        .nav-links button.active { background: var(--primary); color: var(--white); }
+
+        main { flex: 1; padding: 2rem; max-width: 1300px; margin: 0 auto; width: 100%; }
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Auth Pages */
+        .auth-container { min-height: 80vh; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: var(--white); padding: 3rem; border-radius: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.05); width: 100%; max-width: 480px; border: 1px solid var(--slate-100); }
+        .auth-card h1 { font-size: 2rem; margin-bottom: 2rem; text-align: center; color: var(--primary); font-weight: 900; letter-spacing: -1px; }
+
+        /* Componentes de Formulário */
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; font-size: 0.9rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--slate-800); }
+        input { width: 100%; padding: 1rem 1.2rem; border: 2px solid var(--slate-200); border-radius: 1rem; background: var(--slate-50); outline: none; font-size: 1rem; font-weight: 600; color: var(--slate-900); transition: 0.2s; }
+        input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+        input.invalid { border-color: var(--danger); background: #fef2f2; }
+
+        /* Radio Buttons Modernos para Sexo */
+        .gender-selector { display: flex; gap: 1rem; }
+        .gender-option { flex: 1; }
+        .gender-option input { display: none; }
+        .gender-option label { display: flex; align-items: center; justify-content: center; padding: 1rem; border: 2px solid var(--slate-200); border-radius: 1rem; background: var(--slate-50); cursor: pointer; font-weight: 800; color: var(--slate-700); transition: 0.2s; gap: 8px; }
+        .gender-option input:checked + label { border-color: var(--primary); background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+
+        .btn { padding: 1rem 1.5rem; border-radius: 1rem; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1rem; letter-spacing: 0.5px; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2); }
+        .btn-success { background: var(--success); color: white; width: 100%; }
+        .btn-danger { background: #fee2e2; color: var(--danger); font-size: 0.8rem; padding: 0.5rem 1rem; border-radius: 0.75rem; }
+
+        /* Grid do Dashboard Principal */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+
+        /* Cartões de Balança UI */
+        .gauge-card { background: var(--white); padding: 2.5rem; border-radius: 2rem; border: 1px solid var(--slate-200); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; }
+        .gauge-header { width: 100%; text-align: center; margin-bottom: 1.5rem; }
+        .gauge-title { font-size: 1rem; font-weight: 900; color: var(--slate-800); text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Isolamento do Canvas para não haver sobreposição */
+        .canvas-container { position: relative; width: 100%; height: 180px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 1rem; }
+        
+        /* Informação de Texto Abaixo da Balança */
+        .gauge-info-box { display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 1rem; }
+        .gauge-info-box p { font-size: 1rem; font-weight: 800; color: var(--slate-900); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;}
+        .gauge-val-huge { font-size: 5rem; font-weight: 900; color: var(--slate-900); line-height: 0.9; letter-spacing: -3px; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .status-badge-pill { font-size: 1rem; font-weight: 800; color: white; padding: 8px 24px; border-radius: 50px; display: inline-block; margin-top: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-transform: uppercase; }
+
+        /* KPIs Lineares */
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--white); padding: 2rem; border-radius: 2rem; border: 1px solid var(--slate-200); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .stat-card::before { content: ""; position: absolute; left: 0; top: 0; width: 6px; height: 100%; background: var(--primary); }
+        .stat-card.success::before { background: var(--success); }
+        .stat-label { font-size: 0.85rem; font-weight: 800; color: var(--slate-700); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .stat-value { font-size: 2.5rem; font-weight: 900; color: var(--slate-900); letter-spacing: -1px; line-height: 1.1; margin-bottom: 8px; }
+        .stat-desc { font-size: 0.9rem; font-weight: 600; color: var(--slate-500); }
+
+        /* Containers Genéricos */
+        .card-wide { background: var(--white); border-radius: 2rem; padding: 2.5rem; border: 1px solid var(--slate-200); margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .card-wide h3 { display: flex; align-items: center; gap: 12px; font-size: 1.2rem; text-transform: uppercase; font-weight: 900; margin-bottom: 2rem; color: var(--slate-800); }
+
+        /* Filtros de Gráfico */
+        .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .filter-btn { background: var(--slate-100); border: none; padding: 0.5rem 1.2rem; border-radius: 1rem; font-size: 0.85rem; font-weight: 800; cursor: pointer; color: var(--slate-700); transition: 0.2s; }
+        .filter-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); }
+
+        /* Tabela */
+        .table-box { overflow-x: auto; border-radius: 1.5rem; border: 1px solid var(--slate-100); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 1.5rem; font-size: 0.85rem; background: var(--slate-50); color: var(--slate-700); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 1.5rem; border-top: 1px solid var(--slate-100); font-size: 1.1rem; font-weight: 700; color: var(--slate-800); vertical-align: middle; }
+
+        /* Legenda de Rodapé Impecável */
+        .footer-legend { margin-top: 2rem; padding: 3rem; background: var(--white); border-radius: 2rem; border: 1px solid var(--slate-200); }
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        .legend-card { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; background: var(--slate-50); border-radius: 1rem; border: 1px solid var(--slate-100); transition: 0.2s; }
+        .legend-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .legend-lead { display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 0.95rem; color: var(--slate-900); }
+        .color-pill { width: 16px; height: 16px; border-radius: 50%; }
+        .legend-range { font-weight: 900; color: var(--slate-600); font-size: 1rem; }
+
+        .lucide { width: 22px; height: 22px; stroke-width: 2.5; }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <nav id="main-nav">
+        <div class="logo"><i data-lucide="activity"></i> FitProgress</div>
+        <div class="nav-links">
+            <button onclick="router.navigate('dashboard')" id="btn-dashboard" class="active"><i data-lucide="layout-dashboard"></i> Painel</button>
+            <button onclick="app.logout()" style="color: var(--danger)"><i data-lucide="log-out"></i> Sair</button>
+        </div>
+    </nav>
+
+    <main>
+        <!-- LOGIN -->
+        <section id="page-login" class="page">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h1>Aceder ao FitProgress</h1>
+                    <form onsubmit="app.login(event)">
+                        <div class="form-group">
+                            <label>Nome de Utilizador</label>
+                            <input type="text" id="log-user" required placeholder="O seu nome">
+                        </div>
+                        <div class="form-group">
+                            <label>Senha de Acesso</label>
+                            <input type="password" id="log-pass" required placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Entrar no Painel <i data-lucide="arrow-right"></i></button>
+                    </form>
+                    <button class="btn btn-success" style="margin-top:1.5rem;" onclick="router.navigate('cadastro')"><i data-lucide="user-plus"></i> Criar Nova Conta</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CADASTRO -->
+        <section id="page-cadastro" class="page">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h1>Nova Conta de Saúde</h1>
+                    <form onsubmit="app.register(event)">
+                        <div class="form-group">
+                            <label>Como quer ser chamado?</label>
+                            <input type="text" id="reg-user" required placeholder="Ex: Reinaldo">
+                        </div>
+                        <div class="form-group">
+                            <label>Crie uma Senha Forte</label>
+                            <input type="password" id="reg-pass" required placeholder="Mínimo 4 caracteres">
+                        </div>
+                        <div class="form-group">
+                            <label>Sexo Biológico (Para cálculo exato de peso ideal)</label>
+                            <div class="gender-selector">
+                                <div class="gender-option"><input type="radio" id="sex-m" name="gender" value="male" checked><label for="sex-m"><i data-lucide="user"></i> Masculino</label></div>
+                                <div class="gender-option"><input type="radio" id="sex-f" name="gender" value="female"><label for="sex-f"><i data-lucide="user"></i> Feminino</label></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Idade Atual</label>
+                            <input type="number" id="reg-age" required placeholder="Ex: 34">
+                        </div>
+                        <div class="form-group">
+                            <label>Sua Altura (Obrigatório formato com ponto: 1.70)</label>
+                            <input type="text" id="reg-height" required placeholder="1.70" oninput="app.validateHeightFormat(this)">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1rem;"><i data-lucide="check-circle"></i> Criar Perfil e Entrar</button>
+                    </form>
+                    <button class="btn" style="width:100%;margin-top:1rem;color:var(--slate-600);background:transparent;" onclick="router.navigate('login')">Voltar ao ecrã de Login</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD -->
+        <section id="page-dashboard" class="page">
+            <header style="margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 id="welcome-text" style="font-size: 3rem; font-weight: 900; letter-spacing: -2px; color: var(--slate-900);">Olá, Reinaldo! 👋</h1>
+                    <p id="user-info-bar" style="color: var(--slate-700); font-weight: 700; font-size: 1.1rem; margin-top: 0.5rem;">Altura: 1.70m | 34 anos | Masculino</p>
+                </div>
+                <div style="font-size: 1rem; font-weight: 800; color: var(--slate-600); display:flex; align-items:center; gap:8px; background: var(--white); padding: 12px 20px; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--slate-200);">
+                    <i data-lucide="calendar"></i> <span id="date-display">--/--/----</span>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- BALANÇA IMC (FIEL À IMAGEM) -->
+                <div class="gauge-card">
+                    <div class="gauge-header">
+                        <span class="gauge-title">Índice de Massa Corporal (IMC)</span>
+                    </div>
+                    
+                    <div class="canvas-container">
+                        <canvas id="imcGauge"></canvas>
+                    </div>
+                    
+                    <div class="gauge-info-box">
+                        <p>Seu IMC é ...</p>
+                        <div class="gauge-val-huge" id="val-imc">0,0</div>
+                        <div class="status-badge-pill" id="badge-imc">---</div>
+                    </div>
+                </div>
+
+                <!-- BALANÇA PESO ATUAL INTELIGENTE -->
+                <div class="gauge-card">
+                    <div class="gauge-header">
+                        <span class="gauge-title">Registro de Peso Atual</span>
+                    </div>
+                    
+                    <div class="canvas-container">
+                        <canvas id="weightGauge"></canvas>
+                    </div>
+                    
+                    <div class="gauge-info-box">
+                        <p>Registro Atual</p>
+                        <div class="gauge-val-huge" id="val-peso">0,0</div>
+                        <p style="font-size: 1.1rem; font-weight: 900; color: var(--primary); letter-spacing: 3px; margin-top: 1rem;">QUILOS</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-row">
+                <div class="stat-card success">
+                    <div class="stat-label">Perda Total Acumulada</div>
+                    <div class="stat-value" id="val-perda">0,0 kg</div>
+                    <div class="stat-desc">Diferença desde o primeiro registo</div>
+                </div>
+                <div class="stat-card" style="border-left-color: var(--primary);">
+                    <div class="stat-label">Peso Ideal Recomendado</div>
+                    <!-- Range de Peso Ideal -->
+                    <div class="stat-value" id="val-ideal" style="color: var(--primary); font-size: 2.5rem;">-- kg - -- kg</div>
+                    <div class="stat-desc">Baseado no IMC Saudável (18.5 - 24.9)</div>
+                </div>
+            </div>
+
+            <!-- Gráfico Linear -->
+            <div class="card-wide">
+                <h3><i data-lucide="trending-down" style="color:var(--success)"></i> Trajetória de Evolução</h3>
+                <div class="filter-row">
+                    <button class="filter-btn" onclick="app.setFilter('7D')" id="f-7D">Semana</button>
+                    <button class="filter-btn" onclick="app.setFilter('30D')" id="f-30D">Mês</button>
+                    <button class="filter-btn" onclick="app.setFilter('1A')" id="filter-1A">Ano</button>
+                    <button class="filter-btn active" onclick="app.setFilter('ALL')" id="f-ALL">Tudo</button>
+                </div>
+                <div style="height: 350px;"><canvas id="lineChart"></canvas></div>
+            </div>
+
+            <!-- Lançamento -->
+            <div class="card-wide">
+                <h3><i data-lucide="plus-circle" style="color:var(--primary)"></i> Registar Nova Pesagem</h3>
+                <form onsubmit="app.addWeight(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; align-items: flex-end;">
+                    <div class="form-group" style="margin:0;"><label>Data da Aferição</label><input type="date" id="new-date" required></div>
+                    <div class="form-group" style="margin:0;"><label>Peso em KG (Ex: 91.90)</label><input type="text" id="new-weight" required placeholder="00.00"></div>
+                    <button type="submit" class="btn btn-primary" style="height: 54px;"><i data-lucide="save"></i> Gravar Registro Seguro</button>
+                </form>
+            </div>
+
+            <!-- Histórico -->
+            <div class="card-wide">
+                <h3><i data-lucide="list" style="color:var(--primary)"></i> Histórico de Registros</h3>
+                <div class="table-box" id="history-box"></div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button class="btn btn-action" onclick="app.exportData()"><i data-lucide="download"></i> Exportar Backup JSON</button>
+                    <label class="btn btn-action" style="margin:0; cursor:pointer;"><i data-lucide="upload"></i> Restaurar Backup<input type="file" id="importFile" style="display:none" onchange="app.importData(event)"></label>
+                </div>
+            </div>
+
+            <!-- LEGENDA REINALDO (FIM DA PÁGINA) -->
+            <div class="footer-legend">
+                <h3 style="font-size: 1.1rem; font-weight: 900; text-transform: uppercase; color: var(--slate-900); margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;"><i data-lucide="info" style="color: var(--primary)"></i> Classificação Detalhada do IMC</h3>
+                <div class="legend-grid">
+                    <div class="legend-card"><div class="legend-lead"><div class="color-pill" style="background: var(--c-16)"></div> Severamente abaixo</div><span class="legend-range">&lt;16</span></div>
+                    <div class="legend-card"><div class="legend-lead"><div class="color-pill" style="background: var(--c-17)"></div> Muito abaixo</div><span class="legend-range">16.0 - 16.9</span></div>
+                    <div class="legend-card"><div class="legend-lead"><div class="color-pill" style="background: var(--c-18)"></div> Abaixo do peso</div><span class="legend-range">17.0 - 18.4</span></div>
+                    <div class="legend-card"><div class="legend-lead"><div class="color-pill" style="background: var(--c-25)"></div> Normal</div><span class="legend-range">18.5 - 24.9</span></div>
+                    <div class="legend-card"><div class="legend-lead"><div class="color-pill" style="background: var(--c-30)"></div> Sobrepeso</div><span class="legend-range">25.0 - 29.9</span></div>
+                    <div class="legend-card"><div class="legend-lead"><div class="color-pill" style="background: var(--c-35)"></div> Obesidade Grau I</div><span class="legend-range">30.0 - 34.9</span></div>
+                    <div class="legend-card"><div class="legend-lead"><div class="color-pill" style="background: var(--c-40)"></div> Obesidade Grau II</div><span class="legend-range">35.0 - 39.9</span></div>
+                    <div class="legend-card"><div class="legend-lead"><div class="color-pill" style="background: var(--c-max)"></div> Obesidade Grau III</div><span class="legend-range">&ge;40.0</span></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+
+        // --- PLUGIN DE AGULHA PROFISSIONAL (NUNCA TOCA NO TEXTO) ---
+        const getPrecisionNeedle = (min, max, isWeightGauge = false, dynamicColor = null) => ({
+            id: 'precisionNeedle',
+            afterDraw(chart) {
+                const { ctx, data } = chart;
+                const needleValue = data.datasets[0].needleValue;
+                if (needleValue === undefined || needleValue === null || isNaN(needleValue)) return;
+
+                const meta = chart.getDatasetMeta(0);
+                if (!meta.data[0]) return;
+
+                const { x, y, outerRadius } = meta.data[0];
+                const clamped = Math.min(max, Math.max(min, needleValue));
+                const angle = Math.PI + ((clamped - min) / (max - min)) * Math.PI;
+
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+
+                // Desenho da agulha elegante e contida dentro do Canvas
+                ctx.shadowColor = 'rgba(0,0,0,0.2)'; 
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetY = 4;
+
+                const needleColor = isWeightGauge && dynamicColor ? dynamicColor : '#2d3748';
+
+                ctx.beginPath();
+                ctx.moveTo(0, -6);
+                ctx.lineTo(outerRadius - 25, 0); // Mantém a agulha longe da borda
+                ctx.lineTo(0, 6);
+                ctx.fillStyle = needleColor;
+                ctx.fill();
+
+                // Pivô central robusto
+                ctx.beginPath();
+                ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                ctx.fillStyle = needleColor;
+                ctx.fill();
+
+                // Parafuso metálico interior
+                ctx.beginPath();
+                ctx.arc(0, 0, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+
+                ctx.restore();
+            }
+        });
+
+        const app = {
+            db: JSON.parse(localStorage.getItem('fit_db')) || { users: {} },
+            currentUsername: null,
+            filterMode: 'ALL',
+
+            save() { localStorage.setItem('fit_db', JSON.stringify(this.db)); },
+
+            notify(msg, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}"></i> ${msg}`;
+                container.appendChild(toast);
+                lucide.createIcons();
+                setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 4000);
+            },
+
+            // Validação visual de formato 1.70
+            validateHeightFormat(el) {
+                const isValid = /^\d\.\d{2}$/.test(el.value);
+                el.classList.toggle('invalid', el.value !== "" && !isValid);
+            },
+
+            // Parsing robusto
+            parseNum(val) {
+                if (!val) return 0;
+                return parseFloat(val.toString().replace(',', '.').trim()) || 0;
+            },
+
+            register(e) {
+                e.preventDefault();
+                const u = document.getElementById('reg-user').value.trim();
+                const p = document.getElementById('reg-pass').value;
+                const hIn = document.getElementById('reg-height').value;
+                const age = parseInt(document.getElementById('reg-age').value);
+                const gender = document.querySelector('input[name="gender"]:checked').value;
+
+                // Verificação de Regex Exata solicitada
+                if (!/^\d\.\d{2}$/.test(hIn)) {
+                    return this.notify("Erro de Formato! A altura deve ser escrita exatamente como 1.70 (com ponto).", "error");
+                }
+                if (u.length < 3) return this.notify("O utilizador deve ter pelo menos 3 letras.", "error");
+                if (isNaN(age) || age < 5 || age > 120) return this.notify("Por favor, insira uma idade válida.", "error");
+                if (this.db.users[u]) return this.notify("Este utilizador já está registado no sistema.", "error");
+                
+                this.db.users[u] = { password: p, height: parseFloat(hIn), gender, age, weights: [] };
+                this.save();
+                this.currentUsername = u;
+                this.notify("Perfil de saúde criado com sucesso!", "success");
+                router.navigate('dashboard');
+            },
+
+            login(e) {
+                e.preventDefault();
+                const u = document.getElementById('log-user').value.trim();
+                const p = document.getElementById('log-pass').value;
+                if (this.db.users[u] && this.db.users[u].password === p) {
+                    this.currentUsername = u;
+                    router.navigate('dashboard');
+                } else { this.notify("Acesso negado. Verifique os dados.", "error"); }
+            },
+
+            logout() { this.currentUsername = null; router.navigate('login'); },
+
+            addWeight(e) {
+                e.preventDefault();
+                const d = document.getElementById('new-date').value;
+                const w = this.parseNum(document.getElementById('new-weight').value);
+                
+                if (w < 20 || w > 400) return this.notify("Peso inserido está fora dos limites humanos.", "error");
+                
+                this.db.users[this.currentUsername].weights.push({ id: Date.now(), date: d, weight: w });
+                this.db.users[this.currentUsername].weights.sort((a,b) => new Date(a.date) - new Date(b.date));
+                this.save();
+                this.renderDashboard();
+                document.getElementById('new-weight').value = '';
+                this.notify("Aferição de peso registada de forma segura.", "success");
+            },
+
+            deleteWeight(id) {
+                this.db.users[this.currentUsername].weights = this.db.users[this.currentUsername].weights.filter(w => w.id !== id);
+                this.save();
+                this.renderDashboard();
+                this.notify("Registro apagado.", "info");
+            },
+
+            setFilter(mode) {
+                this.filterMode = mode;
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('f-' + mode).classList.add('active');
+                this.renderDashboard();
+            },
+
+            exportData() {
+                const data = this.db.users[this.currentUsername];
+                const now = new Date();
+                const name = `backup fitprogress ${String(now.getDate()).padStart(2,'0')}-${String(now.getMonth()+1).padStart(2,'0')}-${now.getFullYear()}-${String(now.getHours()).padStart(2,'0')}h${String(now.getMinutes()).padStart(2,'0')}.json`;
+                const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+                const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+            },
+
+            importData(e) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const imported = JSON.parse(ev.target.result);
+                        this.db.users[this.currentUsername] = { ...this.db.users[this.currentUsername], ...imported };
+                        this.save(); 
+                        this.renderDashboard();
+                        this.notify("Base de dados restaurada com sucesso!", "success");
+                    } catch(err) { this.notify("O ficheiro de backup encontra-se corrompido.", "error"); }
+                };
+                reader.readAsText(e.target.files[0]);
+            },
+
+            renderDashboard() {
+                const user = this.db.users[this.currentUsername];
+                const weights = user.weights;
+                const lastW = weights.length ? this.parseNum(weights[weights.length-1].weight) : 0;
+                const firstW = weights.length ? this.parseNum(weights[0].weight) : 0;
+                
+                // --- CORREÇÃO AUTOMÁTICA DE DADOS CORROMPIDOS (ALTURA 170cm) ---
+                let h = user.height;
+                if (h > 3) {
+                    h = h / 100;
+                    user.height = h; // Grava a correção permanente no perfil
+                    this.save();
+                }
+
+                // CÁLCULOS BIOMÉTRICOS EXATOS
+                const imc = lastW > 0 ? (lastW / (h * h)) : 0;
+                const perda = firstW - lastW;
+                
+                // CÁLCULO DO RANGE DE PESO IDEAL (Baseado no IMC 18.5 a 24.9)
+                const idealMin = 18.5 * (h * h);
+                const idealMax = 24.9 * (h * h);
+
+                document.getElementById('welcome-text').innerText = `Olá, ${this.currentUsername}! 👋`;
+                document.getElementById('user-info-bar').innerText = `Altura: ${h.toFixed(2)}m | Idade: ${user.age} anos | Sexo: ${user.gender === 'male' ? 'Masculino' : 'Feminino'}`;
+                document.getElementById('date-display').innerText = new Date().toLocaleDateString('pt-PT');
+                
+                document.getElementById('val-peso').innerText = lastW > 0 ? lastW.toFixed(1).replace('.', ',') : "0,0";
+                document.getElementById('val-imc').innerText = imc > 0 ? imc.toFixed(1).replace('.', ',') : "0,0";
+                document.getElementById('val-perda').innerText = perda > 0 ? `${perda.toFixed(1).replace('.', ',')} kg` : "0,0 kg";
+                document.getElementById('val-ideal').innerText = `${idealMin.toFixed(1).replace('.', ',')} - ${idealMax.toFixed(1).replace('.', ',')} kg`;
+
+                // STATUS IMC DINÂMICO
+                const badge = document.getElementById('badge-imc');
+                let sText = "Sem Dados", sColor = "var(--slate-400)";
+                
+                if (imc > 0) {
+                    if (imc < 16) { sText = "Severamente baixo"; sColor = "var(--c-16)"; }
+                    else if (imc < 17) { sText = "Muito baixo"; sColor = "var(--c-17)"; }
+                    else if (imc < 18.5) { sText = "Abaixo do peso"; sColor = "var(--c-18)"; }
+                    else if (imc < 25) { sText = "Normal"; sColor = "var(--c-25)"; }
+                    else if (imc < 30) { sText = "Sobrepeso"; sColor = "var(--c-30)"; }
+                    else if (imc < 35) { sText = "Obesidade Grau I"; sColor = "var(--c-35)"; }
+                    else if (imc < 40) { sText = "Obesidade Grau II"; sColor = "var(--c-40)"; }
+                    else { sText = "Obesidade Grau III"; sColor = "var(--c-max)"; }
+                }
+                badge.innerText = sText; 
+                badge.style.background = sColor;
+
+                // COR DA AGULHA DE PESO
+                // A agulha fica VERDE se o utilizador estiver dentro do range ideal de peso
+                let weightNeedleColor = '#1e293b'; // Default cinza se não tiver peso
+                if (lastW > 0) {
+                    if (lastW >= idealMin && lastW <= idealMax) {
+                        weightNeedleColor = 'var(--success)'; // Verde = Saudável
+                    } else {
+                        weightNeedleColor = 'var(--danger)';  // Vermelho = Alerta
+                    }
+                }
+
+                this.drawCharts(lastW, imc, weights, idealMin, idealMax, weightNeedleColor);
+                this.drawTable(weights);
+                lucide.createIcons();
+            },
+
+            drawCharts(peso, imc, allWeights, idealMin, idealMax, weightNeedleColor) {
+                const gaugeOptions = { 
+                    rotation: -90, 
+                    circumference: 180, 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: false, tooltip: false },
+                    animation: { duration: 1500, easing: 'easeOutQuart' },
+                    layout: { padding: { bottom: 10 } }
+                };
+
+                // BALANÇA DE PESO INTELIGENTE (Fiel ao range saudável de IMC)
+                let maxW = Math.max(idealMax + 40, peso + 10);
+                let minW = Math.max(10, Math.min(idealMin - 40, peso - 10));
+                
+                const blueZone = Math.max(0, idealMin - minW);
+                const greenZone = Math.max(0, idealMax - idealMin);
+                const redZone = Math.max(0, maxW - idealMax);
+                
+                const wCtx = document.getElementById('weightGauge');
+                if (Chart.getChart(wCtx)) Chart.getChart(wCtx).destroy();
+                new Chart(wCtx, {
+                    type: 'doughnut',
+                    data: { 
+                        datasets: [{ 
+                            data: [blueZone, greenZone, redZone], 
+                            backgroundColor: ['#38bdf8', '#10b981', '#ef4444'], // Azul (Abaixo), Verde (Ideal), Vermelho (Acima)
+                            needleValue: peso, 
+                            borderWidth: 0, 
+                            cutout: '80%' 
+                        }] 
+                    },
+                    options: gaugeOptions,
+                    plugins: [getPrecisionNeedle(minW, maxW, true, weightNeedleColor)]
+                });
+
+                // BALANÇA DE IMC EXATA DA IMAGEM
+                const iCtx = document.getElementById('imcGauge');
+                if (Chart.getChart(iCtx)) Chart.getChart(iCtx).destroy();
+                new Chart(iCtx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [1, 1, 1.5, 6.5, 5, 5, 5, 5], 
+                            backgroundColor: [
+                                '#3b82f6', '#60a5fa', '#38bdf8', '#84cc16', 
+                                '#fbbf24', '#f97316', '#ef4444', '#b91c1c'
+                            ], // Uso exclusivo de Hexadecimais para impedir erro do Chart.js
+                            needleValue: imc, 
+                            borderWidth: 0, 
+                            cutout: '80%'
+                        }]
+                    },
+                    options: gaugeOptions,
+                    plugins: [getPrecisionNeedle(15, 45)]
+                });
+
+                // TRAJETÓRIA LINE CHART
+                const filtered = this.getFiltered(allWeights);
+                const lCtx = document.getElementById('lineChart');
+                if (Chart.getChart(lCtx)) Chart.getChart(lCtx).destroy();
+                new Chart(lCtx, {
+                    type: 'line',
+                    data: {
+                        labels: filtered.map(w => w.date.split('-').reverse().slice(0,2).join('/')),
+                        datasets: [{
+                            data: filtered.map(w => w.weight), 
+                            borderColor: '#4f46e5', 
+                            borderWidth: 4, 
+                            pointBackgroundColor: '#ffffff', 
+                            pointBorderColor: '#4f46e5',
+                            pointBorderWidth: 3,
+                            pointRadius: 6, 
+                            pointHoverRadius: 8,
+                            tension: 0.4, 
+                            fill: true, 
+                            backgroundColor: (context) => {
+                                const chart = context.chart;
+                                const {ctx, chartArea} = chart;
+                                if (!chartArea) return null;
+                                const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                                gradient.addColorStop(0, 'rgba(79, 70, 229, 0.15)');
+                                gradient.addColorStop(1, 'rgba(79, 70, 229, 0)');
+                                return gradient;
+                            }
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { legend: false }, 
+                        scales: { 
+                            y: { ticks: { callback: v => v+'kg', font: { weight: 'bold' } }, grid: { color: '#f1f5f9' } }, 
+                            x: { grid: { display: false }, ticks: { font: { weight: 'bold', color: '#64748b' } } } 
+                        } 
+                    }
+                });
+            },
+
+            getFiltered(weights) {
+                const now = new Date();
+                if (this.filterMode === '7D') return weights.filter(w => (now - new Date(w.date)) <= 7*86400000);
+                if (this.filterMode === '30D') return weights.filter(w => (now - new Date(w.date)) <= 30*86400000);
+                if (this.filterMode === '1A') return weights.filter(w => (now - new Date(w.date)) <= 365*86400000);
+                return weights;
+            },
+
+            drawTable(weights) {
+                const box = document.getElementById('history-box');
+                if (!weights.length) { box.innerHTML = "<p style='text-align:center;padding:3rem;color:var(--slate-500);font-weight:700;'>Nenhum registro de peso inserido ainda. Comece hoje!</p>"; return; }
+                let h = `<table><thead><tr><th>Data</th><th>Peso</th><th>Variação</th><th style="text-align:right">Acão</th></tr></thead><tbody>`;
+                [...weights].reverse().forEach(w => {
+                    const idx = weights.indexOf(w);
+                    const prev = weights[idx - 1];
+                    let diff = '--';
+                    if (prev) {
+                        const d = w.weight - prev.weight;
+                        diff = `<span style="color:${d > 0 ? 'var(--danger)' : 'var(--success)'};font-weight:900; background: ${d > 0 ? '#fef2f2' : '#ecfdf5'}; padding: 4px 10px; border-radius: 6px;">${d > 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(2).replace('.', ',')}</span>`;
+                    }
+                    h += `<tr>
+                            <td>${w.date.split('-').reverse().join('/')}</td>
+                            <td><strong>${w.weight.toFixed(2).replace('.', ',')} kg</strong></td>
+                            <td>${diff}</td>
+                            <td style="text-align:right"><button class="btn btn-danger" onclick="app.deleteWeight(${w.id})"><i data-lucide="trash-2" style="width:16px;"></i></button></td>
+                          </tr>`;
+                });
+                box.innerHTML = h + `</tbody></table>`;
+            }
+        };
+
+        const router = {
+            navigate(id) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById('page-'+id).classList.add('active');
+                document.getElementById('main-nav').style.display = (id === 'dashboard') ? 'flex' : 'none';
+                if(id === 'dashboard') app.renderDashboard();
+                lucide.createIcons();
+            }
+        };
+
+        window.onload = () => router.navigate('login');
+    </script>
+</body>
+</html>
